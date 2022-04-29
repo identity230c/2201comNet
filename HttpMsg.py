@@ -9,14 +9,15 @@ class HttpMsg: #헤더랑 바디는 똑같은 구조니까 상속받아서 요�
   def addBody(self, body): 
     self.body += body
 
+  def bodyLength(self):
+    return str(len(self.body))
+
   def getStr(self):
     #head line, body line 생성
     ret = ""
     for idx in self.header:# dict에서 하나씩 꺼내서 헤더로 삽입
       ret += "{}:{}\r\n".format(idx,self.header[idx])
-      
-    ret +="Content-Length:{}".format(len(self.body))
-      
+        
     ret += "\r\n\r\n" # head-body 분할
       
     ret += self.body
@@ -39,7 +40,7 @@ class ReqMsg(HttpMsg):
   host = "localhost:8080" 
   
   def __init__(self, method, path):
-    self.requestLine = "{} {} HTTP/1.1\r\n".format(method, path)
+    self.requestLine = "{} {} HTTP/1.1\r\n".format(method.upper(), path)
     super().__init__()
   
   def getStr(self):
@@ -85,7 +86,7 @@ class RespMsgReader(MsgReader): # 응답 메시지 해석
 
 if __name__ == "__main__":
   # 테스트용 
-  req = ReqMsg("GET", "/asdf")
+  req = ReqMsg("get", "/asdf")
   req.addBody("asdf")
   print("--요청메시지--")
   print(req.getStr())
