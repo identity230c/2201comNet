@@ -71,7 +71,7 @@ class Server:
       resp = RespMsg(200, "OK")
     else:
       # 파일이 없으면 새로 만들어야함
-      respBody = req.body()
+      respBody = req.body
       self.fileWriter(path, respBody)  
       resp = RespMsg(201, "Created")
     resp.addBody(respBody)
@@ -145,7 +145,7 @@ if __name__ == "__main__":
   IP = input("INSERT IP\n")
   server = Server(IP, 8080)
   try:
-    for _ in range(4):
+    for _ in range(10):
       server.service()
   except:
     server.close()       
