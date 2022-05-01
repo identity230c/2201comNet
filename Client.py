@@ -28,6 +28,7 @@ class Client:
     print("↓")
     print("받은 HTTP 응답 메시지 :\n" + resp.decode('utf-8'))
 
+    
   def close(self):
     self.socket.close()
 
@@ -35,9 +36,24 @@ if __name__ == "__main__":
   # 서버와 통신 가능한지 확인
   IP = input("INSERT HOST IP\n")
   client = Client(IP, 8080)
-  client.request("PUT", "/testFile.txt", "PUT")
-  client.request("GET", "/What.txt")
-  client.request("POST", "/testFile.txt", "POST")
-  client.request("HEAD", "/testFile.txt")
+
+  # PUT 메서드가 제대로 작동하는 지 테스트
+  client.request("PUT", "/testPutMethod.txt", "Test Put Method1")
+  client.request("PUT", "/testPutMethod.txt", "Test Put Method2")
+  client.request("PUT", "/testPutMethod.txt", "Test Put Method3")
+
+  # POST가 제대로 작동하는 지 테스트
+  client.request("POST", "/testPostMethod.txt", "Test Post Method1")
+  client.request("POST", "/testPostMethod.txt", "Test Post Method2")
+  client.request("POST", "/testPostMethod.txt", "Test Post Method3")
+
+  # 404 메시지가 제대로 오는지 테스트
+  client.request("HEAD", "/test404.txt")
+  client.request("GET", "/test404.txt")
+  
+  # HEAD 메서드의 header 속성이 유효한지 테스트 + GET method 테스트
+  client.request("HEAD", "/testPostMethod.txt")
+  client.request("GET", "/testPostMethod.txt")
+
   client.close()
   

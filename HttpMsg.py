@@ -10,7 +10,10 @@ class HttpMsg: #헤더랑 바디는 똑같은 구조니까 상속받아서 요�
     self.body += body
 
   def bodyLength(self):
-    return str(len(self.body))
+    return str(len(self.body.encode('utf-8'))) 
+    # wireshark는 content-length를 byte단위로 계산
+    # python의 len은 문자의 개수로 계산 
+    # encode함수를 적용해야 wireshark에서 제대로 감지가능
 
   def getStr(self):
     #head line, body line 생성
@@ -18,7 +21,7 @@ class HttpMsg: #헤더랑 바디는 똑같은 구조니까 상속받아서 요�
     for idx in self.header:# dict에서 하나씩 꺼내서 헤더로 삽입
       ret += "{}:{}\r\n".format(idx,self.header[idx])
         
-    ret += "\r\n" # head-body 분할. header에 이미 \r\n이 존재함
+    ret += "\r\n" # head-body 분할. 
       
     ret += self.body
     return ret
@@ -68,7 +71,7 @@ class MsgReader:
   def splitHeaderLine(self,headerLine):
     for line in headerLine:
       tmp = line.split(":")
-      idx, val = tmp[0], "".join(tmp[1:]) # host: "localhost:8080"
+      idx, val = tmp[0], ":".join(tmp[1:]) # host: "localhost:8080"
       self.header[idx] = val
 
   def __str__(self):
@@ -94,7 +97,7 @@ class ReqMsgReader(MsgReader): # 요청 메시지 해석
 class RespMsgReader(MsgReader): # 응답 메시지 해석
   def splitStartLine(self, startLine):
     tmp = startLine.split(" ")
-    self.httpVersion, self.sCode, self.sMsg = tmp[0], tmp[1], ''.join(tmp[2:])
+    self.httpVersion, self.sCode, self.sMsg = tmp[0], tmp[1], ' '.join(tmp[2:])
 
   def __str__(self):
     ret = ""
