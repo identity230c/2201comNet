@@ -12,7 +12,8 @@ class Server:
   
   def service(self):
     req = self.connection.recv(65536)
-
+    print("#####################################################################")
+    print("받은 HTTP 요청 메시지 :\n" + req.decode('utf-8'))
     try: 
       req = ReqMsgReader(req.decode("utf-8"))
     except: # 메시지 해석이 안되면 클라이언트가 요청을 잘못보낸 것으로 간주
@@ -31,12 +32,10 @@ class Server:
         self.doPut(req)
       if req.method == "POST":
         self.doPost(req)
-    except Exception as e:
-      print(e)
+    except:
       self.send500() # 서버에서 오류 발생
   
   def isFile(self, path): # 파일이 있는 지 확인
-    print("./content" + path)
     return os.path.isfile("./content" + path)
   
   def fileReader(self, path): # 파일 출력
@@ -51,7 +50,6 @@ class Server:
 
   # 서버업무
   def doGet(self,req):
-    print("Get")
     path = req.path
     if self.isFile(path):
       resp = RespMsg(200, "OK")
@@ -64,7 +62,6 @@ class Server:
       self.send404() # 파일이 없으므로 404      
   
   def doPost(self,req):
-    print("Post")
     path = req.path
     if self.isFile(path):
       # 파일이 이미 있는 경우에는 수정
@@ -83,7 +80,6 @@ class Server:
     self.send(resp)
 
   def doPut(self,req):
-    print("Put")
     path = req.path
     self.fileWriter(path, req.body)
     resp = RespMsg(201, "Created")
@@ -93,7 +89,6 @@ class Server:
     self.send(resp)
     
   def doHead(self,req):
-    print("Head")
     path = req.path
     if self.isFile(path):
       resp = RespMsg(200, "OK")
@@ -111,37 +106,30 @@ class Server:
     
   # 이하는 에러 코드 발신메서드
   def send405(self):
-    print("405")
     resp = RespMsg(405, "Method Not Allowed")
     self.send(resp)
   def send404(self):
-    print("404")
     resp = RespMsg(404, "Not Found")
     self.send(resp)
   def send400(self):
-    print("400")
     resp = RespMsg(400, "Bad Request")
     self.send(resp)
   def send500(self):
-    print("500")
     resp = RespMsg(500, "Server error")
     self.send(resp)
   
   # 소켓 전송, close
   def send(self, resp):
-    print(resp.getStr())
+    print("↓")
+    print("보낼 HTTP 응답 message :\n" + resp.getStr())
     self.connection.send(resp.getCode())
   
   def close(self):
     self.socket.close()
 
-class ZeroSocketError(Exception):
-  def __init__(self) :
-    super.__init__("클라이언트와의 연결이 끊어졌습니다")
-    pass
-
 if __name__ == "__main__":
-  server = Server("127.0.0.1", 8080)
+  IP = input("INSERT IP\n")
+  server = Server(IP, 8080)
   try:
     for _ in range(4):
       server.service()

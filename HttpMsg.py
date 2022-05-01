@@ -18,7 +18,7 @@ class HttpMsg: #헤더랑 바디는 똑같은 구조니까 상속받아서 요�
     for idx in self.header:# dict에서 하나씩 꺼내서 헤더로 삽입
       ret += "{}:{}\r\n".format(idx,self.header[idx])
         
-    ret += "\r\n\r\n" # head-body 분할
+    ret += "\r\n" # head-body 분할. header에 이미 \r\n이 존재함
       
     ret += self.body
     return ret
@@ -71,16 +71,37 @@ class MsgReader:
       idx, val = tmp[0], "".join(tmp[1:]) # host: "localhost:8080"
       self.header[idx] = val
 
+  def __str__(self):
+    ret = "\nHEADER"
+    headerFormat = "{}:{}"
+    for idx in self.header:
+      ret += "\n- " + headerFormat.format(idx, self.header[idx])
+    ret += '\nBODY = "'
+    ret += self.body +'"'
+    return ret
+
 class ReqMsgReader(MsgReader): # 요청 메시지 해석
   def splitStartLine(self, startLine):
-    print(startLine)
     self.method, self.path, self.httpVersion = startLine.split(" ") 
+
+  def __str__(self):
+    ret = ""
+    ret += "\nMETHOD = " + self.method
+    ret += "\nPATH = " + self.path
+    ret += "\nHTTP-VERSION = " + self.httpVersion
+    return ret + super().__str__()
 
 class RespMsgReader(MsgReader): # 응답 메시지 해석
   def splitStartLine(self, startLine):
     tmp = startLine.split(" ")
-    print(tmp)
     self.httpVersion, self.sCode, self.sMsg = tmp[0], tmp[1], ''.join(tmp[2:])
+
+  def __str__(self):
+    ret = ""
+    ret += "\nHTTP-VERSION = " + self.httpVersion
+    ret += "\nSTATUS-CODE = " + self.sCode
+    ret += "\nSTATUS-MSG = " + self.sMsg
+    return ret + super().__str__()
 
 
 
