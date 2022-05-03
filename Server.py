@@ -9,6 +9,9 @@ class Server:
     self.socket.bind((ip,port))
     self.socket.listen(1)
     self.connection, self.addr = self.socket.accept()
+    
+    if not os.path.isdir("./content"):
+      os.makedirs("./content")
   
   def service(self):
     req = self.connection.recv(65536)
@@ -35,20 +38,21 @@ class Server:
     except:
       self.send500() # 서버에서 오류 발생
   
+  # 파일 입출력 관련 메서드
   def isFile(self, path): # 파일이 있는 지 확인
     return os.path.isfile("./content" + path)
   
-  def fileReader(self, path): # 파일 출력
+  def fileReader(self, path): # 파일에 있는 내용 읽기
     ret = ""
     with open("./content" + path, "r") as f:
       ret = f.read()
     return ret
 
-  def fileWriter(self, path, body): # 파일 입력
+  def fileWriter(self, path, body): # 파일에다가 쓰기
     with open("./content" + path, "w") as f:
       f.write(body)
 
-  # 서버업무
+  # 이 아래는 요청 method에 따른 업무를 실제로 수행하는 메서드
   def doGet(self,req):
     path = req.path
     if self.isFile(path):
@@ -145,7 +149,7 @@ if __name__ == "__main__":
   IP = input("INSERT IP\n")
   server = Server(IP, 8080)
   try:
-    for _ in range(10):
+    for _ in range(8):
       server.service()
   except:
     server.close()       
