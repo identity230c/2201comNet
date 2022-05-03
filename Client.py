@@ -38,22 +38,20 @@ if __name__ == "__main__":
   client = Client(IP, 8080)
 
   # PUT 메서드가 제대로 작동하는 지 테스트
-  client.request("PUT", "/testPutMethod.txt", "Test Put Method\n") #1
-  client.request("PUT", "/testPutMethod.txt", "Test Put Method\n") #2
-  client.request("PUT", "/testPutMethod.txt", "Test Put Method\n") #3
+  client.request("PUT", "/testPutMethod.txt", "Test Put Method\n") #1 PUT-201
+  client.request("PUT", "/testPutMethod.txt", "Test Put Method\n") #2 PUT-201
 
   # POST가 제대로 작동하는 지 테스트
-  client.request("POST", "/testPostMethod.txt", "Test Post Method\n")  #4  
-  client.request("POST", "/testPostMethod.txt", "Test Post Method\n")  #5
-  client.request("POST", "/testPostMethod.txt", "Test Post Method\n")  #6
+  client.request("POST", "/testPostMethod.txt", "Test Post Method\n")  #3 POST-201
+  client.request("POST", "/testPostMethod.txt", "Test Post Method\n")  #4 POST-200
 
   # 404 메시지가 제대로 오는지 테스트
-  client.request("HEAD", "/test404.txt")  #7
-  client.request("GET", "/test404.txt")   #8
+  client.request("HEAD", "/test404.txt")  #5  HEAD-404
+  client.request("GET", "/test404.txt")   #6  GET-404
   
   # HEAD 메서드의 header 속성이 유효한지 테스트 + GET method 테스트
-  client.request("HEAD", "/testPostMethod.txt")   #9
-  client.request("GET", "/testPostMethod.txt")    #10
-
+  client.request("HEAD", "/testPostMethod.txt")   #7  HEAD-200
+  client.request("GET", "/testPostMethod.txt")    #8  GET-200
+  
   client.close()
   
