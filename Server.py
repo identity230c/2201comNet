@@ -1,10 +1,13 @@
 from socket import *
 import os
+
 from HttpMsg import RespMsg, ReqMsgReader 
 
 class Server:
+  # 405 METHOD NOT ALLOWED 에러를 위한 세팅
   acceptMethod = ["GET", "HEAD", "PUT", "POST"]
-  def __init__(self, ip, port):
+  
+  def __init__(self, ip, port): # 소켓 설정
     self.socket = socket(AF_INET, SOCK_STREAM)
     self.socket.bind((ip,port))
     self.socket.listen(1)
@@ -14,12 +17,15 @@ class Server:
       os.makedirs("./content")
   
   def service(self):
+    # 클라이언트 소켓으로부터 요청을 받아들이기 
+     
     req = self.connection.recv(65536)
+    
     print("#####################################################################")
     print("받은 HTTP 요청 메시지 :\n" + req.decode('utf-8'))
     try: 
       req = ReqMsgReader(req.decode("utf-8"))
-    except: # 메시지 해석이 안되면 클라이언트가 요청을 잘못보낸 것으로 간주
+    except: # 메시지 해석이 안되면 클라이언트가 요청을 잘못보낸 것(400)으로 간주
       self.send400()
       return 
     
@@ -54,6 +60,7 @@ class Server:
 
   # 이 아래는 요청 method에 따른 업무를 실제로 수행하는 메서드
   def doGet(self,req):
+    # file이 있는지 확인하고 200, 혹은 404 상태코드를 보냄
     path = req.path
     if self.isFile(path):
       resp = RespMsg(200, "OK")
@@ -62,10 +69,14 @@ class Server:
       resp.setHeader("Content-Type", "text/plain")
       resp.setHeader("Content-Length", resp.bodyLength())
       self.send(resp)
+      # 파일이 있으므로 body 영역에 내용을 담아 보내기
     else: 
       self.send404(path) # 파일이 없으므로 404      
   
-  def doPost(self,req):
+  def doPut(self,req):
+    # PUT 메서드 
+    #   path에 해당하는 file이 없으면 새로 생성 
+    #   path에 해당하는 file이 있으면 UPDATE
     path = req.path
     if self.isFile(path):
       # 파일이 이미 있는 경우에는 수정
@@ -83,7 +94,9 @@ class Server:
     resp.setHeader("Content-Length", resp.bodyLength())
     self.send(resp)
 
-  def doPut(self,req):
+  def doPost(self,req):
+    # POST 메서드
+    #   무조건 새로 생성
     path = req.path
     self.fileWriter(path, req.body)
     resp = RespMsg(201, "Created")
@@ -93,6 +106,7 @@ class Server:
     self.send(resp)
     
   def doHead(self,req):
+    # GET 요청이랑 똑같이 작동하지만, body 영역이 있으면 안됨 
     path = req.path
     if self.isFile(path):
       resp = RespMsg(200, "OK")
@@ -104,7 +118,7 @@ class Server:
       resp.setHeader("Content-Length", str(len(respBody.encode('utf-8'))))
       self.send(resp)      
     else: 
-      self.send404(path)
+      self.send404(path, True)
 
     
   # 이하는 에러 코드 발신메서드
@@ -115,11 +129,15 @@ class Server:
     resp.setHeader("Content-Length", resp.bodyLength())
     self.send(resp)
   
-  def send404(self, path):
+  def send404(self, path, isHeader=False):
     resp = RespMsg(404, "Not Found")
-    resp.addBody("요청하신 {}가 존재하지 않습니다".format(path))
+    msg404 = "요청하신 {}가 존재하지 않습니다".format(path)
+    if isHeader: 
+      resp.setHeader("Content-Length", str(len(msg404.encode('utf-8'))))
+    else: 
+      resp.addBody(msg404)
+      resp.setHeader("Content-Length", resp.bodyLength())
     resp.setHeader("Content-Type", "text/plain")
-    resp.setHeader("Content-Length", resp.bodyLength())
     self.send(resp)
     
   def send400(self):

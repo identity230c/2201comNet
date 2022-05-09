@@ -3,12 +3,15 @@ from socket import *
 from HttpMsg import ReqMsg, RespMsgReader
 
 class Client:
-  def __init__(self, ip, port):
+  def __init__(self, ip, port): # 소켓설정
     self.socket = socket(AF_INET, SOCK_STREAM)
     self.socket.connect((ip, port))
     ReqMsg.host = "{}:{}".format(ip,port)
   
   def request(self, method, path, body=""):
+    # 요청메시지를 보내고
+    # 응답메시지를 받는다 
+    
     print("#####################################################################")
     # 요청 메시지 생성
     msgMaker = ReqMsg(method, path)
